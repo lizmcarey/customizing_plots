@@ -1,0 +1,146 @@
+--- 
+title: "Customizing Plots"
+knit: (function(input_file, encoding) {
+  out_dir <- 'docs';
+  rmarkdown::render(input_file,
+ encoding=encoding,
+ output_file=file.path(dirname(input_file), out_dir, 'index.html'))})
+author: "Liz Carey"
+output:  
+    html_document: 
+      toc: true
+      toc_float: true
+      theme: paper
+      code_folding: hide
+      highlight: textmate
+      df_print: paged
+
+--- 
+</br> 
+</br>  
+
+This page is meant to document code I've written over time to customize data visualizations. 
+
+```{r, warning = FALSE, message=FALSE}
+#load necessary packages
+library(tidyverse)
+library(gapminder)
+```
+
+
+### Changing the colors of your histogram
+
+Let's say you want to customize your histogram. One way is to manually hard code each of the variables to the colors you want.  
+
+
+```{r, warning = FALSE, message=FALSE, fig.align="center"}
+
+ggplot(gapminder, aes(lifeExp, fill = continent)) +
+  geom_histogram() + 
+  scale_fill_manual(values = c("Africa" = "#EA7580", 
+                               "Americas" = "#F6A1A5", 
+                               "Asia" = "#F8CD9C", 
+                               "Europe"= "#1BB6AF", 
+                               "Oceania" = "#088BBE"))
+
+```
+  
+Alternatively, if there is a color palette you want to use, you can create a function to populate colors for your plot.  
+
+Below is an example using hex codes from the [LaCroixColoR - LaCroix Color Palettes for R](https://github.com/johannesbjork/LaCroixColoR) 
+
+```{r, warning = FALSE, message=FALSE}
+
+#Store laCroix color palette, taken from the LaCroixColoR package
+PassionFruit <- c("#C70E7B", "#FC6882", "#A6E000", "#1BB6AF", "#6C6C9D", "#172869")
+Mango <- c("#FF5300", "#9ED80B", "#43B629", "#1BB6AF", "#8F92A1", "#172869")
+Pure <- c("#AFDFEF", "#54BCD1", "#1BB6AF", "#0099D5", "#007BC3", "#172869")
+Lime <- c("#2CB11B", "#95C65C", "#BDDE9B", "#1BB6AF", "#0076C0", "#172869")
+Lemon <- c("#F7AA14", "#F5D000", "#F7E690", "#1BB6AF", "#088BBE", "#172869")
+Orange <- c("#EF7C12", "#FCA315", "#F4B95A", "#1BB6AF", "#088BBE", "#172869")
+Berry <- c("#B25D91", "#CB87B4", "#EFC7E6", "#1BB6AF", "#088BBE", "#172869")
+CranRaspberry <- c("#D9565C", "#F28A8A", "#EDA9AB", "#1BB6AF", "#088BBE", "#172869")
+Pamplemousse <- c("#EA7580", "#F6A1A5", "#F8CD9C", "#1BB6AF", "#088BBE", "#172869")
+PeachPear <- c("#FF3200", "#E9A17C", "#E9E4A6", "#1BB6AF", "#0076BB", "#172869")
+Coconut <- c("#881C00", "#AF6125", "#F4E3C7", "#1BB6AF", "#0076BB", "#172869")
+Apricot <- c("#D72000", "#EE6100", "#FFAD0A", "#1BB6AF", "#9093A2", "#132157")
+Tangerine <- c("#EF562A", "#EC921D", "#F7B449", "#FFED00", "#1BB6AF", "#9093A2", "#132157")
+KeyLime <- c("#D84D16", "#FFF800", "#8FDA04", "#009F3F", "#132157")
+PommeBaya <- c("#C23A4B", "#FBBB48", "#EFEF46", "#31D64D", "#132157")
+CeriseLimon <- c("#EE4244", "#F8D961", "#B6D944", "#638E6E", "#3C5541", "#132157")
+PinaFraise <- c("#F44B4B", "#F19743", "#F1F1A8", "#92D84F", "#7473A6", "#132157")
+KiwiSandia <- c("#D18F55", "#FF3F38", "#FF8C8D", "#AFDE62", "#3CBC38", "#4F5791", " #132157")
+MelonPomelo <- c("#EE404E", "#F99D53", "#F9E7C2", "#24C852", "#4F5791", "#132157")
+MurePepino <- c("#D64358", "#EAFB88", "#3C8C4D", "#DFCEE0", "#4F5791", "#132157")
+
+
+#store continents in a list
+continents <- c("Africa", "Americas", "Asia", "Europe", "Oceania")
+
+#create a function that will assign the continent names to a color. The function takes three inputs: the list of variables to be colored (e.g. continent names), the type of laCroix flavor palette, and the start of the index. change the index_start to 0 or 1 to get variations of a laCroix flavor palette.
+set_continent_color <- function(continent_names, lacroix_color, index_start) {
+  
+  #create empty vector to store values
+  output <- vector("character", length(continent_names))
+  
+  #loop over the length of the list of continent names, and assign a color to each continent
+  for (i in seq_along(continent_names)) {
+    output[[i]] <- lacroix_color[[index_start + i]]
+  }
+  output 
+  
+}
+
+```
+
+#### Plot the histogram  
+
+Set custom colors using the `set_continent_color` function in the `scale_fill_manual` function.
+
+<div class = "row">
+  
+<div class = "col-md-6">
+```{r, warning = FALSE, message=FALSE, fig.align="center"}
+
+ggplot(gapminder, aes(lifeExp, fill = continent)) +
+  geom_histogram() + 
+  scale_fill_manual(values = set_continent_color(continents, PeachPear, 1))
+```
+</div>
+
+<div class = "col-md-6">
+```{r, warning = FALSE, message=FALSE, fig.align="center"}
+
+ggplot(gapminder, aes(lifeExp, fill = continent)) +
+  geom_histogram() + 
+  scale_fill_manual(values = set_continent_color(continents, Lemon, 1))
+```  
+</div>
+
+</div>
+
+*** 
+
+### Customizing your density plot  
+
+The below code shows you how to choose custom colors and split each continent plot.   
+
+```{r}
+# Store colors you want for each continent
+density_plot_colors <- c( "Africa" = "#EA7580", 
+                          "Americas" = "#F6A1A5", 
+                          "Asia" = "#F8CD9C", 
+                          "Europe"= "#1BB6AF", 
+                          "Oceania" = "#088BBE")
+
+ggplot(gapminder, 
+       aes(lifeExp, fill = continent, colour = continent)) +
+       geom_density(alpha = 0.1) + 
+       scale_color_manual(values = density_plot_colors) + 
+       scale_fill_manual(values = density_plot_colors)  +
+       facet_wrap(~continent)
+
+                          
+```
+
+
